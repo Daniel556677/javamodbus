@@ -1,0 +1,79 @@
+package powerdemand0503.rtu.all;
+
+import java.util.ArrayList;
+import org.apache.log4j.Logger;
+import com.serotonin.modbus4j.ModbusMaster;
+import com.serotonin.modbus4j.exception.ModbusTransportException;
+import com.serotonin.modbus4j.msg.ReadHoldingRegistersRequest;
+import com.serotonin.modbus4j.msg.ReadHoldingRegistersResponse;
+
+
+public class Read implements Runnable  {
+	static Logger logger = Logger.getLogger(Read.class); 
+	private ModbusMaster master;
+	private int slaveId;
+	private int[] start;
+	private String sql;
+
+	static DAOUtils tool = DAOUtils.getInstance();
+		
+	public void run() {
+		while(true) {
+		readHoldingRegistersTest(master, slaveId, start, sql);
+		try {
+			Thread.sleep(15000);
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+			}		
+		}
+	}
+    public Read(ModbusMaster master, int slaveId, int[] start, String sql) {
+		super();
+		this.master = master;
+		this.slaveId = slaveId;
+		this.start = start;
+		this.sql = sql;
+	}
+	private static synchronized void readHoldingRegistersTest(ModbusMaster master, 
+			int slaveId, int[] start, String sql){  	
+    	switch(slaveId) {
+		case 50:
+			getList( master,  slaveId, start, sql);									
+			break;
+//		case 51:			
+//			getList( master,  slaveId, start, sql);	
+//			break;
+		case 52:			
+			getList( master,  slaveId, start, sql);						
+			break;
+		case 53:			
+			getList( master,  slaveId, start, sql);			
+			break;
+			default: break;
+    	}
+    } 
+		
+	private static void getList(ModbusMaster master, 
+			int slaveId, int[] start,  String sql) {
+		ArrayList list = new ArrayList();
+		try { 
+			for(int i = 0; i < start.length; i++) {
+				ReadHoldingRegistersRequest request = new ReadHoldingRegistersRequest(  
+	                    slaveId, start[i], 4); 
+	            ReadHoldingRegistersResponse response = (ReadHoldingRegistersResponse) master  
+	                    .send(request);  
+	            if (response.isException()) {
+	    			System.out.println("Exception response: message=" + response.getExceptionMessage());
+	    		} else {
+	    			 short[] data = response.getShortData();
+	    			 for(short d : data)
+	    				 list.add(d);		    		
+	    			 }
+				}
+	            tool.writeToDB(list, sql);
+	       } catch (ModbusTransportException e) { 
+	    	   e.printStackTrace();
+	        	logger.warn("modbus " + e.getMessage());    	
+	        }	
+	}
+}
