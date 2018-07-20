@@ -1,0 +1,49 @@
+package powerdemand0503.rtu.all;
+
+import org.apache.log4j.Logger;
+import com.serotonin.modbus4j.ModbusMaster;
+import com.serotonin.modbus4j.exception.ModbusInitException;
+
+public class TestRead {
+	static String sql1 = "insert into xg.demanddata50 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//	static String sql2 = "insert into data51 values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	static String sql3 = "insert into xg.demanddata52 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	static String sql4 = "insert into xg.demanddata53 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	static Logger logger = Logger.getLogger(TestRead.class);	
+    static int[] registers50 = {1099,1123,1139,2149};
+//    static int[] registers51 = {1099,1119,1140,2150};
+//    static int[] registers52 = {1099,1123,1139,2149};
+//    static int[] registers53 = {1099,1123,1139,2149};
+	public static void main(String[] args) {
+		
+		ModbusMaster master = MasterPool.getMaster();
+		while(!master.isInitialized()) {
+			try {			
+				master.init();				
+			} catch (ModbusInitException e) {
+				e.printStackTrace();
+				logger.fatal("modbus initError"+e.getMessage());
+			}
+			try {
+				Thread.sleep(15000);
+			} catch (InterruptedException e) {
+				logger.fatal(e.getMessage());
+			}
+		}
+		
+		Read r0 = new Read(master, 50, registers50, sql1);
+//		Read r1 = new Read(master, 51, registers51, sql2);
+		Read r2 = new Read(master, 52, registers50, sql3);
+		Read r3 = new Read(master, 53, registers50, sql4);
+		Thread t0 = new Thread(r0);
+		t0.start();
+//		Thread t1 = new Thread(r1);
+//		t1.start();
+		Thread t2 = new Thread(r2);
+		t2.start();
+		Thread t3 = new Thread(r3);
+		t3.start();
+	}
+	
+	 
+}
