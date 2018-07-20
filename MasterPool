@@ -1,0 +1,44 @@
+package powerdemand0503.rtu.all;
+
+import com.serotonin.io.serial.SerialParameters;
+import com.serotonin.modbus4j.ModbusFactory;
+import com.serotonin.modbus4j.ModbusMaster;
+import com.serotonin.modbus4j.exception.ModbusInitException;
+import com.serotonin.modbus4j.ip.IpParameters;
+
+public class MasterPool {
+    private final static int BAUD_RATE = 19200;  
+	public static ModbusMaster getTcpMaster(String ip, int port) {
+		ModbusFactory modbusFactory = new ModbusFactory();  
+		 // �豸ModbusTCP��Ip��˿ڣ�������趨�˿���Ĭ��Ϊ502  
+	    IpParameters params = new IpParameters();  
+	    params.setHost(ip); 
+	    // ���ö˿ڣ�Ĭ��502 
+	    if (502 != port) {  
+		params.setPort(port);  
+	    } 
+	    ModbusMaster tcpMaster = null;  
+	    // ����1��IP�Ͷ˿���Ϣ ����2���������Ӽ���  
+	    tcpMaster = modbusFactory.createTcpMaster(params, true); 
+		 try {  
+	        tcpMaster.init();  
+	        System.out.println("=======��ʼ���ɹ�========");  
+	    } catch (ModbusInitException e) {  
+	         System.out.println("��ʼ���쳣"); 
+			  } 	
+		return tcpMaster;
+	} 
+	public static ModbusMaster getMaster() {
+    	SerialParameters serialParameters = new SerialParameters();  
+        serialParameters.setCommPortId("COM1");  
+        serialParameters.setParity(2);  
+        serialParameters.setDataBits(8);  
+        serialParameters.setStopBits(1);  
+        serialParameters.setPortOwnerName("Numb nuts");  
+        serialParameters.setBaudRate(BAUD_RATE);  
+        ModbusFactory modbusFactory = new ModbusFactory();  
+        ModbusMaster master = modbusFactory.createRtuMaster(serialParameters); 
+        System.out.println(master);
+        return master;
+    }
+}
