@@ -1,0 +1,64 @@
+package powerdemand0503.rtu.all;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+
+
+public class DAOUtils {
+	static Logger logger = Logger.getLogger(DAOUtils.class); 
+	static DateFormat mediumDateFormat = DateFormat.getDateTimeInstance
+       		(DateFormat.MEDIUM,DateFormat.MEDIUM);	
+	private DAOUtils() {}
+	private static DAOUtils instance = new DAOUtils();
+	public static DAOUtils getInstance() {
+		return instance;
+	}
+	private Connection getConnection(){		
+		String driverclass = "jdbc:mysql://localhost:3306/mysql?useSSL=false&serverTimezone=UTC";
+		String url = "com.mysql.cj.jdbc.Driver";
+		String user = "root";
+		String password = "root";
+		Connection connection = null;	
+		try {
+			Class.forName(driverclass);
+			connection = DriverManager.getConnection(url, user, password);
+		} catch (ClassNotFoundException e) {
+			logger.fatal("database error"+e.getMessage());
+        } catch (SQLException e) {
+        	logger.fatal("database error"+e.getMessage());		
+            	}
+		return connection;		
+	}
+	
+	
+	public  synchronized void  writeToDB(ArrayList list, String sql) {		
+		Connection connection = getConnection();
+		PreparedStatement preparedstatement = null;		
+		try {
+			preparedstatement = connection.prepareStatement(sql);
+			preparedstatement.setString(1, mediumDateFormat.format(new Date()));
+			for (int i = 0; i < list.size(); i++) {
+				preparedstatement.setShort(i + 2,  (short) list.get(i));
+			}
+			preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.fatal(e.getMessage());
+	   }finally{
+			try {
+				preparedstatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				logger.warn("database error"+e.getMessage());
+			}
+	}
+}
+
+}
